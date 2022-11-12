@@ -5,76 +5,47 @@ import 'package:suitcase/src/extensions/extensions.dart';
 import 'package:suitcase/src/utils/utils.dart';
 import 'package:universal_io/io.dart';
 
-const dorfCommandName = 'dorf';
+const fuaCommandName = 'fua';
 
-/// Command that runs the given command in all Dart projects in the current
+/// Command that sets the FVM version in all Flutter projects in the current
 /// directory and its recursive subdirectories.
-///
-/// If `--ignore-errors` is `true` (the default), the command will continue
-/// running even if a command fails for a given project.
-class DorfCommand extends Command<int> {
-  DorfCommand() {
-    argParser
-      ..addFlag(
-        'ignore-errors',
-        abbr: 'i',
-        defaultsTo: true,
-        help: 'Ignore any errors that may occur while running the given '
-            'command, in which case the command will continue running for '
-            'other projects. Note that, regardless of this flag, the command '
-            'will exit with a non-zero exit code if the given command fails '
-            'for any project.',
-      )
-      ..addFlag(
-        'show-output',
-        abbr: 'o',
-        defaultsTo: true,
-        help: 'Show the output of the given command for each project.',
-      )
-      ..addFlag(
-        'ignore-flutter',
-        abbr: 'f',
-        defaultsTo: true,
-        help: 'Ignore all Flutter projects (i.e., only run the given command '
-            'for pure Dart projects).',
-      );
+class FuaCommand extends Command<int> {
+  FuaCommand() {
+    argParser.addFlag(
+      'ignore-errors',
+      abbr: 'i',
+      defaultsTo: true,
+      help: 'Ignore any errors that may occur while setting the FVM version, '
+          'in which case the command will continue running for other projects. '
+          'Note that, regardless of this flag, the command will exit with a '
+          'non-zero exit code if setting the FVM version fails for any '
+          'project.',
+    );
   }
   @override
-  String get name => dorfCommandName;
+  String get name => fuaCommandName;
 
   @override
-  String get description => 'Runs the given command in all Dart projects in '
+  String get description => 'Sets the FVM version in all Flutter projects in '
       'the current directory and its recursive subdirectories.';
 
   @override
   Future<int> run() async {
     final ignoreErrors = argResults!['ignore-errors'] as bool;
-    final showOutput = argResults!['show-output'] as bool;
-    final ignoreFlutter = argResults!['ignore-flutter'] as bool;
 
-    final command = argResults!.rest.join(' ');
-    context.logger.detail('Received command: "$command"');
-
-    if (command.isEmpty) {
-      throw Exception(
-        'No command provided.\n\n'
-        '$usage',
-      );
-    }
+    final version = (() => argResults!.rest.single)
+        .expect<StateError>('Zero or more than one version argument provided.');
 
     final baseDir = Directory.current;
 
-    final projectDiscoveryProgress =
-        context.logger.progress('Finding Dart projects in ${baseDir.path}...');
-    final projects = DirUtils.getDartProjects(baseDir, recursive: true);
-    if (ignoreFlutter) {
-      projects.removeWhere(DirUtils.isFlutterProject);
-    }
+    final projectDiscoveryProgress = context.logger
+        .progress('Finding Flutter projects in ${baseDir.path}...');
+    final projects = DirUtils.getFlutterProjects(baseDir, recursive: true);
     projectDiscoveryProgress
-        .complete('Found ${projects.length} Dart project(s).');
+        .complete('Found ${projects.length} Flutter project(s).');
 
     if (projects.isEmpty) {
-      context.logger.info('No Dart projects found.');
+      context.logger.info('No Flutter projects found.');
       return ExitCode.success.code;
     }
 
@@ -92,7 +63,7 @@ class DorfCommand extends Command<int> {
       try {
         final res = await context.shellCli
             .run(
-              command,
+              'fvm use $version',
               [],
               workingDirectory: dir.path,
             )
@@ -103,10 +74,6 @@ class DorfCommand extends Command<int> {
         prog.complete();
 
         context.logger.detail('Output:\n---\n${res.stdout}\n---');
-
-        if (showOutput) {
-          context.logger.info(res.stdout.toString());
-        }
       } catch (e) {
         prog.fail('Failed to run command in $truncatedPathString.');
         if (ignoreErrors) {

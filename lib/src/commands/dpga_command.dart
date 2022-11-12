@@ -19,7 +19,7 @@ class DpgaCommand extends Command<int> {
         'ignore-errors',
         abbr: 'i',
         defaultsTo: true,
-        help: 'Ignore any errors that may while running pub get, in '
+        help: 'Ignore any errors that may occur while running pub get, in '
             'which case the command will continue running for other projects. '
             'Note that, regardless of this flag, the command will exit with a '
             'non-zero exit code if retrieving packages fails for any project.',

@@ -19,7 +19,8 @@ class ForfCommand extends Command<int> {
         'ignore-errors',
         abbr: 'i',
         defaultsTo: true,
-        help: 'Ignore any errors that may while running the given command, in '
+        help:
+            'Ignore any errors that may occur while running the given command, in '
             'which case the command will continue running for other projects. '
             'Note that, regardless of this flag, the command will exit with a '
             'non-zero exit code if the given command fails for any project.',
