@@ -25,4 +25,8 @@ dev_dependencies:
 executables:
   suitcase: suitcase
   gho: gho
+  dorf: dorf
+  forf: forf
+  dpga: dpga
+  fpga: fpga
 

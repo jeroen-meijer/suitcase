@@ -11,8 +11,8 @@ class ShellCli {
     String? workingDirectory,
   }) {
     return _Cmd.run(
-      cmd,
-      args ?? const [],
+      'zsh',
+      ['-ic', cmd, ...?args],
       workingDirectory: workingDirectory,
     );
   }

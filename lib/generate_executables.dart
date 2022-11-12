@@ -1,6 +1,6 @@
 import 'package:path/path.dart' as p;
-import 'package:suitcase/src/command_runner.dart';
 import 'package:suitcase/src/command_context.dart';
+import 'package:suitcase/src/command_runner.dart';
 import 'package:suitcase/src/utils/utils.dart';
 import 'package:universal_io/io.dart';
 import 'package:yaml_edit/yaml_edit.dart';
@@ -119,32 +119,13 @@ String _generateDartFileContents(String commandName) {
 // functions as a wrapper around the `bin/suitcase.dart` executable that will
 // invoke the `$commandName` command.
 
-import 'package:suitcase/src/command_context.dart';
-import 'package:suitcase/src/command_runner.dart';
-import 'package:universal_io/io.dart';
+import 'package:suitcase/run_command_runner.dart';
 
-Future<void> main(List<String> args) async {
-  await _flushThenExit(
-    await withContext(
-      CommandContext.fallback(),
-      () => SuitcaseCommandRunner().run([
-        '$commandName',
-        ...args,
-      ]),
-    ),
+Future<void> main(List<String> args) {
+  return runCommandRunner(
+    args,
+    prefixedCommand: '$commandName',
   );
 }
-
-/// Flushes the stdout and stderr streams, then exits the program with the given
-/// status code.
-///
-/// This returns a Future that will never complete, since the program will have
-/// exited already. This is useful to prevent Future chains from proceeding
-/// after you've decided to exit.
-Future<void> _flushThenExit(int status) {
-  return Future.wait<void>([stdout.close(), stderr.close()])
-      .then<void>((_) => exit(status));
-}
-
 ''';
 }

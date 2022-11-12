@@ -3,6 +3,9 @@ import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:suitcase/src/command_context.dart';
 import 'package:suitcase/src/commands/commands.dart';
+import 'package:suitcase/src/commands/dpga_command.dart';
+import 'package:suitcase/src/commands/fpga_command.dart';
+import 'package:suitcase/src/utils/utils.dart';
 import 'package:suitcase/src/version.dart';
 
 const executableName = 'suitcase';
@@ -44,6 +47,10 @@ class SuitcaseCommandRunner extends CommandRunner<int> {
     final commands = [
       GhoCommand(),
       UpgradeCommand(),
+      DorfCommand(),
+      ForfCommand(),
+      DpgaCommand(),
+      FpgaCommand(),
     ];
 
     // Add sub commands
@@ -120,20 +127,11 @@ class SuitcaseCommandRunner extends CommandRunner<int> {
       try {
         exitCode = await super.runCommand(topLevelResults);
       } catch (e) {
-        context.logger.err(_attemptGetErrorMessage(e));
+        context.logger.err(ExceptionUtils.extractMessageFromError(e));
         exitCode = ExitCode.software.code;
       }
     }
 
     return exitCode;
-  }
-
-  String _attemptGetErrorMessage(Object e) {
-    try {
-      // ignore: avoid_dynamic_calls
-      return (e as dynamic).message as String;
-    } catch (_) {
-      return e.toString();
-    }
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
+import 'package:suitcase/run_command_runner.dart';
 import 'package:suitcase/src/command_context.dart';
 import 'package:suitcase/src/utils/utils.dart';
 import 'package:universal_io/io.dart';
@@ -87,18 +88,15 @@ class _Cmd {
       ..detail('stdout:\n${result.stdout}')
       ..detail('stderr:\n${result.stderr}');
 
+    if (result.exitCode == -2) {
+      // User cancelled the process.
+      onUserExit();
+    }
+
     if (throwOnError) {
       _throwIfProcessFailed(result, cmd, args);
     }
     return result;
-  }
-
-  static Iterable<Future<T>> runWhere<T>({
-    required Future<T> Function(FileSystemEntity) run,
-    required bool Function(FileSystemEntity) where,
-    String cwd = '.',
-  }) {
-    return Directory(cwd).listSync(recursive: true).where(where).map(run);
   }
 
   static void _throwIfProcessFailed(

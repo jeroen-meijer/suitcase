@@ -52,13 +52,16 @@ class DirUtils {
     bool recursive = false,
   }) {
     final projects = <Directory>[];
-    final subDirs = dir.listSync(recursive: recursive);
+    final subDirs = [
+      dir,
+      ...dir.listSync(recursive: recursive).whereType<Directory>(),
+    ];
 
     for (final subDir in subDirs) {
       final isInsideIgnoredDir =
           subDir.path.split('/').any(_ignoredPubspecDirectories.contains);
 
-      if (subDir is Directory && !isInsideIgnoredDir) {
+      if (!isInsideIgnoredDir) {
         final pubspec = File(p.join(subDir.path, 'pubspec.yaml'));
         if (pubspec.existsSync()) {
           projects.add(subDir);
@@ -71,7 +74,9 @@ class DirUtils {
   /// Returns a list of directories containing Flutter projects.
   ///
   /// A folder is a considered Flutter project if it contains a `pubspec.yaml`
-  /// file and this file contains a `flutter` key in the `environment` section.
+  /// file and this file contains a `flutter` key in the `dependencies` or
+  /// `environment` section.
+  /// See [isFlutterProject] for more details.
   ///
   /// Projects that live inside directories such as `.dart_tool` or `.fvm` are
   /// ignored.
@@ -81,24 +86,32 @@ class DirUtils {
     Directory dir, {
     bool recursive = false,
   }) {
-    final projects = <Directory>[];
     final dartProjects = getDartProjects(dir, recursive: recursive);
+    return [
+      for (final project in dartProjects)
+        if (isFlutterProject(project)) project,
+    ];
+  }
 
-    for (final dartProject in dartProjects) {
-      final pubspec = File(p.join(dartProject.path, 'pubspec.yaml'));
-      try {
-        final pubspecContent = pubspec.readAsStringSync();
-        final pubspecYaml = YamlEditor(pubspecContent);
+  /// Returns whether the current directory is a Flutter project.
+  ///
+  /// A folder is a considered Flutter project if it contains a `pubspec.yaml`
+  /// file and this file contains a `flutter` key in the `dependencies` or
+  /// `environment` section.
+  static bool isFlutterProject(Directory dir) {
+    final pubspec = File(p.join(dir.path, 'pubspec.yaml'));
+    try {
+      final pubspecContent = pubspec.readAsStringSync();
+      final pubspecYaml = YamlEditor(pubspecContent);
 
-        final environment = pubspecYaml.parseAt(['environment']);
-        if (environment is YamlMap && environment.containsKey('flutter')) {
-          projects.add(dartProject);
-        }
-      } catch (_) {
-        // Ignore.
-      }
+      final environment = pubspecYaml.parseAt(['environment']);
+      final dependencies = pubspecYaml.parseAt(['dependencies']);
+      return environment is YamlMap && environment.containsKey('flutter') ||
+          dependencies is YamlMap && dependencies.containsKey('flutter');
+    } catch (_) {
+      // Ignore.
     }
 
-    return projects;
+    return false;
   }
 }
