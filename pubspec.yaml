@@ -1,6 +1,6 @@
 name: suitcase
 description: A collection of useful personal scripts and tools.
-version: 0.0.1
+version: 0.1.0
 publish_to: none
 
 environment:
@@ -29,4 +29,3 @@ executables:
   forf: forf
   dpga: dpga
   fpga: fpga
-
