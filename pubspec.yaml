@@ -22,6 +22,7 @@ dev_dependencies:
   mocktail: ^0.3.0
   test: ^1.22.0
   very_good_analysis: ^3.1.0
+
 executables:
   suitcase: suitcase
   gho: gho
@@ -29,3 +30,4 @@ executables:
   forf: forf
   dpga: dpga
   fpga: fpga
+  dpa: dpa

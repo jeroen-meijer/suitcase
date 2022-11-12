@@ -28,6 +28,13 @@ class DpgaCommand extends Command<int> {
         'show-output',
         abbr: 'o',
         help: 'Show the output of pub get for each project.',
+      )
+      ..addFlag(
+        'ignore-flutter',
+        abbr: 'f',
+        defaultsTo: true,
+        help: 'Ignore all Flutter projects (i.e., only run the given command '
+            'for pure Dart projects).',
       );
   }
   @override
@@ -41,6 +48,7 @@ class DpgaCommand extends Command<int> {
   Future<int> run() async {
     final ignoreErrors = argResults!['ignore-errors'] as bool;
     final showOutput = argResults!['show-output'] as bool;
+    final ignoreFlutter = argResults!['ignore-flutter'] as bool;
 
     const command = 'dart pub get';
 
@@ -48,6 +56,9 @@ class DpgaCommand extends Command<int> {
     final projectDiscoveryProgress =
         context.logger.progress('Finding Dart projects in ${baseDir.path}...');
     final projects = DirUtils.getDartProjects(baseDir, recursive: true);
+    if (ignoreFlutter) {
+      projects.removeWhere(DirUtils.isFlutterProject);
+    }
     projectDiscoveryProgress
         .complete('Found ${projects.length} Dart project(s).');
 
@@ -109,7 +120,7 @@ class DpgaCommand extends Command<int> {
       } else {
         context.logger.err(
           'Failed to get package for ${failures.length} out of '
-          '${projects.length} projects.\n\n'
+          '${projects.length} project(s).\n\n'
           'Hint: the first error encountered was:\n'
           '---\n'
           '${ExceptionUtils.extractMessageFromError(failures.values.first)}\n'

@@ -125,7 +125,7 @@ class ForfCommand extends Command<int> {
       } else {
         context.logger.err(
           'Failed to run command in ${failures.length} out of '
-          '${projects.length} projects.\n\n'
+          '${projects.length} project(s).\n\n'
           'Hint: the first error encountered was:\n'
           '---\n'
           '${ExceptionUtils.extractMessageFromError(failures.values.first)}\n'

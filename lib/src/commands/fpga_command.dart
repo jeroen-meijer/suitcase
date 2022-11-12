@@ -117,7 +117,7 @@ class FpgaCommand extends Command<int> {
       } else {
         context.logger.err(
           'Failed to get package for ${failures.length} out of '
-          '${projects.length} projects.\n\n'
+          '${projects.length} project(s).\n\n'
           'Hint: the first error encountered was:\n'
           '---\n'
           '${ExceptionUtils.extractMessageFromError(failures.values.first)}\n'

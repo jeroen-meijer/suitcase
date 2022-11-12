@@ -3,6 +3,7 @@ import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:suitcase/src/command_context.dart';
 import 'package:suitcase/src/commands/commands.dart';
+import 'package:suitcase/src/commands/dpa_command.dart';
 import 'package:suitcase/src/commands/dpga_command.dart';
 import 'package:suitcase/src/commands/fpga_command.dart';
 import 'package:suitcase/src/utils/utils.dart';
@@ -51,6 +52,7 @@ class SuitcaseCommandRunner extends CommandRunner<int> {
       ForfCommand(),
       DpgaCommand(),
       FpgaCommand(),
+      DpaCommand(),
     ];
 
     // Add sub commands
