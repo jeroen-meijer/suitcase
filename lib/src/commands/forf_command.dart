@@ -9,21 +9,15 @@ const forfCommandName = 'forf';
 
 /// Command that runs the given command in all Flutter projects in the current
 /// directory and its recursive subdirectories.
-///
-/// If `--ignore-errors` is `true` (the default), the command will continue
-/// running even if a command fails for a given project.
 class ForfCommand extends Command<int> {
   ForfCommand() {
     argParser
       ..addFlag(
-        'ignore-errors',
-        abbr: 'i',
-        defaultsTo: true,
-        help:
-            'Ignore any errors that may occur while running the given command, in '
-            'which case the command will continue running for other projects. '
-            'Note that, regardless of this flag, the command will exit with a '
-            'non-zero exit code if the given command fails for any project.',
+        'fail-fast',
+        abbr: 'f',
+        help: 'Exit the process immediately after a failure. If disabled, '
+            'the command will continue running until all projects have been '
+            'processed.',
       )
       ..addFlag(
         'show-output',
@@ -47,7 +41,7 @@ class ForfCommand extends Command<int> {
 
   @override
   Future<int> run() async {
-    final ignoreErrors = argResults!['ignore-errors'] as bool;
+    final failFast = argResults!['fail-fast'] as bool;
     final showOutput = argResults!['show-output'] as bool;
 
     final command = argResults!.rest.join(' ');
@@ -104,10 +98,10 @@ class ForfCommand extends Command<int> {
         }
       } catch (e) {
         prog.fail('Failed to run command in $truncatedPathString.');
-        if (ignoreErrors) {
-          failures[dir] = e;
-        } else {
+        if (failFast) {
           rethrow;
+        } else {
+          failures[dir] = e;
         }
       }
     }

@@ -9,20 +9,15 @@ const dpgaCommandName = 'dpga';
 
 /// Command that runs `dart pub get` in all Dart projects in the
 /// current directory and its recursive subdirectories.
-///
-/// If `--ignore-errors` is `true` (the default), the command will continue
-/// running even if a command fails for a given project.
 class DpgaCommand extends Command<int> {
   DpgaCommand() {
     argParser
       ..addFlag(
-        'ignore-errors',
-        abbr: 'i',
-        defaultsTo: true,
-        help: 'Ignore any errors that may occur while running pub get, in '
-            'which case the command will continue running for other projects. '
-            'Note that, regardless of this flag, the command will exit with a '
-            'non-zero exit code if retrieving packages fails for any project.',
+        'fail-fast',
+        abbr: 'f',
+        help: 'Exit the process immediately after a failure. If disabled, '
+            'the command will continue running until all projects have been '
+            'processed.',
       )
       ..addFlag(
         'show-output',
@@ -31,7 +26,7 @@ class DpgaCommand extends Command<int> {
       )
       ..addFlag(
         'ignore-flutter',
-        abbr: 'f',
+        abbr: 'i',
         defaultsTo: true,
         help: 'Ignore all Flutter projects (i.e., only run the given command '
             'for pure Dart projects).',
@@ -46,7 +41,7 @@ class DpgaCommand extends Command<int> {
 
   @override
   Future<int> run() async {
-    final ignoreErrors = argResults!['ignore-errors'] as bool;
+    final failFast = argResults!['fail-fast'] as bool;
     final showOutput = argResults!['show-output'] as bool;
     final ignoreFlutter = argResults!['ignore-flutter'] as bool;
 
@@ -98,10 +93,10 @@ class DpgaCommand extends Command<int> {
         }
       } catch (e) {
         prog.fail('Failed to get packages for $truncatedPathString.');
-        if (ignoreErrors) {
-          failures[dir] = e;
-        } else {
+        if (failFast) {
           rethrow;
+        } else {
+          failures[dir] = e;
         }
       }
     }

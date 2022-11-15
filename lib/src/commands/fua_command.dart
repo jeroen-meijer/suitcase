@@ -12,14 +12,11 @@ const fuaCommandName = 'fua';
 class FuaCommand extends Command<int> {
   FuaCommand() {
     argParser.addFlag(
-      'ignore-errors',
-      abbr: 'i',
-      defaultsTo: true,
-      help: 'Ignore any errors that may occur while setting the FVM version, '
-          'in which case the command will continue running for other projects. '
-          'Note that, regardless of this flag, the command will exit with a '
-          'non-zero exit code if setting the FVM version fails for any '
-          'project.',
+      'fail-fast',
+      abbr: 'f',
+      help: 'Exit the process immediately after a failure. If disabled, '
+          'the command will continue running until all projects have been '
+          'processed.',
     );
   }
   @override
@@ -31,7 +28,7 @@ class FuaCommand extends Command<int> {
 
   @override
   Future<int> run() async {
-    final ignoreErrors = argResults!['ignore-errors'] as bool;
+    final failFast = argResults!['fail-fast'] as bool;
 
     final version = (() => argResults!.rest.single)
         .expect<StateError>('Zero or more than one version argument provided.');
@@ -76,10 +73,10 @@ class FuaCommand extends Command<int> {
         context.logger.detail('Output:\n---\n${res.stdout}\n---');
       } catch (e) {
         prog.fail('Failed to run command in $truncatedPathString.');
-        if (ignoreErrors) {
-          failures[dir] = e;
-        } else {
+        if (failFast) {
           rethrow;
+        } else {
+          failures[dir] = e;
         }
       }
     }

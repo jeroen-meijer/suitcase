@@ -20,13 +20,11 @@ class DpaCommand extends Command<int> {
         help: 'Add the given packages as development dependencies.',
       )
       ..addFlag(
-        'ignore-errors',
-        abbr: 'i',
-        defaultsTo: true,
-        help: 'Ignore any packages that fail to be added, in which case the '
-            'command will continue running for other packages. Note that, '
-            'regardless of this flag, the command will exit with a non-zero '
-            'exit code if adding any package fails.',
+        'fail-fast',
+        abbr: 'f',
+        help: 'Exit the process immediately after a failure. If disabled, '
+            'the command will continue running until all projects have been '
+            'processed.',
       )
       ..addOption(
         'path',
@@ -46,7 +44,7 @@ class DpaCommand extends Command<int> {
   @override
   Future<int> run() async {
     final dev = argResults!['dev'] as bool;
-    final ignoreErrors = argResults!['ignore-errors'] as bool;
+    final failFast = argResults!['fail-fast'] as bool;
     final path = argResults!['path'] as String?;
 
     final packages = argResults!.rest;
@@ -90,10 +88,10 @@ class DpaCommand extends Command<int> {
       } catch (e) {
         prog.fail('Failed to add package "$packageName"');
         context.logger.err('Error:\n---\n$e\n---');
-        if (ignoreErrors) {
-          failures[packageName] = e;
-        } else {
+        if (failFast) {
           rethrow;
+        } else {
+          failures[packageName] = e;
         }
       }
     }
